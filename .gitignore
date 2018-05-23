@@ -1,0 +1,17 @@
+overall/saves/model_analysis/
+overall/saves/logs/
+overall/saves/opentuner/
+overall/saves/params_tunning/
+overall/saves/tmp/
+overall/saves/models/test*
+overall/saves/models/my*
+overall/data/data_v*
+overall/data_preprocessed/
+overall/opentuner.db/
+overall/opentuner.log
+overall/opentuner_my/
+overall/*.pyc
+overall/.idea/
+overall/main_*
+overall/analysis/*
+overall/analysis_*
