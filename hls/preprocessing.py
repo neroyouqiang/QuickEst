@@ -9,16 +9,6 @@ from sklearn.model_selection import train_test_split
 # pickle
 import cPickle as pickle
 
-# argparse
-import argparse
-
-# setup parser
-parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', type = str, default = './data/',
-                    help = 'Directory to the input data.')
-parser.add_argument('--output_dir', type = str, default = './out/',
-                    help = 'Directory to the output data.')
-
 #================================ Split data =================================#
 
 # group the columns according to their catagories
@@ -83,18 +73,18 @@ def normalize_data(X):
 if __name__ == "__main__":
 
   # fix the random seed so that the results would be reproduceable
-  # comment out this line to generate different datasets
   np.random.seed(seed = 6)        
 
-  # parse arguments and set up paths
-  FLAGS, unparsed = parser.parse_known_args()
-  folderPath = FLAGS.data_dir
-  outputPath = FLAGS.output_dir
+  folderPath = './data/'
   dataFile   = 'data.csv'
   nameFile   = 'feature_names.txt'
 
-  if not os.path.exists(folderPath):
-    sys.exit('Input directory does not exist!')
+  if len(sys.argv) < 2:
+    # sys.exit('Please provide the output path!')
+    outputPath = "./data_processed/"
+  else:
+    outputPath = sys.argv[1]
+
   if not os.path.exists(outputPath):
     os.makedirs(outputPath)
 
@@ -177,8 +167,12 @@ if __name__ == "__main__":
 
   # dataset containing all devices
   all_data = {'training_X': all_training_X, 'training_Y': all_training_Y, 'norm_training_Y': norm_all_training_Y, 'test_X': all_test_X, 'test_Y': all_test_Y, 'normVal': all_normVal}
-  with open( outputPath + "/all.pkl", "wb" ) as f:
-    pickle.dump(all_data, f)
+  print all_training_X
+  print norm_all_training_Y
+  print test_X
+  print test_Y
+  print normVal
+  pickle.dump(all_data, open( outputPath + "/all.pkl", "wb" ))
 
   # device-specific dataset
   for device in [0, 1, 2, 3]:
@@ -188,8 +182,5 @@ if __name__ == "__main__":
                 'test_X': tests_X[device], 
                 'test_Y': tests_Y[device], 
                 'normVal': Y_normVals[device]}    
-    with open( outputPath + "/dev" + str(device) + ".pkl", "wb" ) as f:
-      pickle.dump(dev_data, f )
-
-  with open( outputPath + "/names.pkl", "wb") as f:
-    pickle.dump(namepack, f)
+    pickle.dump(dev_data, open( outputPath + "/dev" + str(device) + ".pkl", "wb" ) )
+  pickle.dump(namepack, open( outputPath + "/names.pkl", "wb"))
