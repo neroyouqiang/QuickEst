@@ -10,9 +10,11 @@ from sklearn import metrics
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', type = str, default = './data/data_test.pkl', 
-                    help = 'Directory to the input dataset. ')
+                    help = 'Directory to the input testing dataset. ')
 parser.add_argument('--model_dir', type = str, default = './saves/train/models.pkl', 
-                    help = 'Directory to the input dataset. ')
+                    help = 'Directory to the pre-trained models. ')
+parser.add_argument('--save_result_dir', type = str, default = './saves/test/results.csv', 
+                    help = 'Directory to save the result. Input folder or file name.')
 
 
 def score_REA(Y, Y_pre):
@@ -53,19 +55,30 @@ def load_model(file_name, silence=False):
     return models
 
 
-def save_results(results, silence=False):
+def save_results(file_save, results, silence=False):
     if not os.path.exists("./saves/test/"):
         os.mkdir("./saves/test/")
         
-    np.savetxt('./saves/test/results.csv', results, delimiter=',')
+    # input file name
+    file_dir, file_name = os.path.split(file_save)
+    if file_dir == '': file_dir = "./saves/train/"
+    if file_name == '': file_name = 'models.pkl'
+    
+    # create folder
+    if not os.path.exists(file_dir):
+        os.mkdir(file_dir)
         
-    if not silence: print "Results are saved to: ", "./saves/test/results.csv"
+    # create file
+    np.savetxt(os.path.join(file_dir, file_name), results, delimiter=',', header='LUT, FF', comments='')
+        
+    if not silence: print "Results are saved to: ", os.path.join(file_dir, file_name)
 
 
 def test_models(models, X, Y, silence=False):
     # test model
     results = np.zeros([X.shape[0], len(models)], dtype=np.float)
-    scores = np.zeros([len(models)], dtype=np.float)
+    scores_RAE = np.zeros([len(models)], dtype=np.float)
+    scores_R2 = np.zeros([len(models)], dtype=np.float)
     for ii in xrange(len(models)):
         # load models
         model_xgb = models[ii][0]
@@ -74,28 +87,26 @@ def test_models(models, X, Y, silence=False):
         
         # predict
         results0 = model_xgb.predict(X[:, features])
-        retults1 = model_lasso.predict(X)
+        results1 = model_lasso.predict(X)
+        results[:, ii] = (results0 + results1) / 2.0
         
-        results[:, ii] = (results0 + retults1) / 2.0
-        # scores[ii] = metrics.r2_score(Y[:, ii], results[:, ii])
-        scores[ii] = score_REA(Y[:, ii], results[:, ii])
+        scores_RAE[ii] = score_REA(Y[:, ii], results[:, ii])
+        scores_R2[ii] =  metrics.r2_score(Y[:, ii], results[:, ii])
     
     # print scores
-    if not silence: print "Score of the results are: ", scores
+    if not silence: print "RAE of the results are: ", scores_RAE
+    if not silence: print "R2 of the results are: ", scores_R2
     
     # return 
     return results
     
 
 if __name__ == '__main__':
-    # fix the random seed
-    np.random.seed(seed = 6)
+    # parser
+    FLAGS, unparsed = parser.parse_known_args()
     
     # print info
     print "\n========== Start testing models ==========\n"
-    
-    # parser
-    FLAGS, unparsed = parser.parse_known_args()
     
     # load testing data
     X, Y = load_data(FLAGS.data_dir)
@@ -107,6 +118,6 @@ if __name__ == '__main__':
     results = test_models(models, X, Y)
     
     # save results
-    save_results(results)
+    save_results(FLAGS.save_result_dir, results)
     
     print "\n========== End ==========\n"

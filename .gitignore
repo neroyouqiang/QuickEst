@@ -1,5 +1,5 @@
-hls/saves/*
-hls/data
+hls/saves/
+hls/data/
 hls/analysis/
 hls/linxgboost/
 hls/opentuner/

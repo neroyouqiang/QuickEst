@@ -11,7 +11,11 @@ from sklearn.linear_model import Lasso
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', type = str, default = './data/data_train.pkl', 
-                    help = 'Directory to the input dataset. ')
+                    help = 'Directory to the input training dataset. ')
+parser.add_argument('--save_model_dir', type = str, default = './saves/train/models.pkl', 
+                    help = 'Directory to save the trained model. Input folder or file name.')
+parser.add_argument('--feature_select', action = 'store_true',
+                    help = 'Use feature selection. ')
 
 Target_Names = ['LUT', 'FF', 'DSP', 'BRAM']
 
@@ -19,23 +23,32 @@ Target_Names = ['LUT', 'FF', 'DSP', 'BRAM']
 def load_data(file_name, silence=False):
     if not silence: print "Load data from: ", file_name
     
+    # check file exist
     if not os.path.exists(file_name):
         sys.exit("Data file " + file_name + " does not exist!")
-        
+    
+    # load data
     with open(file_name, "rb") as f:
-        data = pickle.load(f)  
+        data = pickle.load(f)
         
     return data[0], data[1]
 
 
-def save_models(models, silence=False):
-    if not os.path.exists("./saves/train/"):
-        os.mkdir("./saves/train/")
-        
-    with open("./saves/train/models.pkl", "wb") as f:
+def save_models(file_save, models, silence=False):
+    # input file name
+    file_dir, file_name = os.path.split(file_save)
+    if file_dir == '': file_dir = "./saves/train/"
+    if file_name == '': file_name = 'models.pkl'
+    
+    # create folder
+    if not os.path.exists(file_dir):
+        os.mkdir(file_dir)
+    
+    # create file
+    with open(os.path.join(file_dir, file_name), "wb") as f:
         pickle.dump(models, f)
         
-    if not silence: print "Models are saved to: ", "./saves/train/models.pkl"
+    if not silence: print "Models are saved to: ", os.path.join(file_dir, file_name)
     
     
 def get_params_xgb(targetid=None):
@@ -112,7 +125,7 @@ def get_params_lasso(targetid=None):
         return param_defaults
     
     
-def train_models(X, Y, silence=False):
+def train_models(X, Y, FLAGS, silence=False):
     
     models = []
     for ii in xrange(0, 2): 
@@ -125,19 +138,22 @@ def train_models(X, Y, silence=False):
         np.random.seed(seed = 100)
         
         # xgboost - feature selection by xgboost
-        model_xgb = xgb.XGBRegressor(learning_rate=params_xgb['learning_rate'],
-                                     n_estimators=params_xgb['n_estimators'],
-                                     max_depth=params_xgb['max_depth'],
-                                     min_child_weight=params_xgb['min_child_weight'],
-                                     subsample=params_xgb['subsample'],
-                                     colsample_bytree=params_xgb['colsample_bytree'],
-                                     gamma=params_xgb['gamma'])
-        model_xgb.fit(X, Y[:, ii])
-    
-        b = model_xgb.get_booster()
-        feature_weights = [b.get_score(importance_type='weight').get(f, 0.) for f in b.feature_names]
-        feature_weights = np.array(feature_weights, dtype=np.float32)
-        feature_select  = (feature_weights / feature_weights.sum()) > 0.05
+        if FLAGS.feature_select:
+            model_xgb = xgb.XGBRegressor(learning_rate=params_xgb['learning_rate'],
+                                         n_estimators=params_xgb['n_estimators'],
+                                         max_depth=params_xgb['max_depth'],
+                                         min_child_weight=params_xgb['min_child_weight'],
+                                         subsample=params_xgb['subsample'],
+                                         colsample_bytree=params_xgb['colsample_bytree'],
+                                         gamma=params_xgb['gamma'])
+            model_xgb.fit(X, Y[:, ii])
+        
+            b = model_xgb.get_booster()
+            feature_weights = [b.get_score(importance_type='weight').get(f, 0.) for f in b.feature_names]
+            feature_weights = np.array(feature_weights, dtype=np.float32)
+            feature_select  = (feature_weights / feature_weights.sum()) > 0.05
+        else:
+            feature_select = np.ones(X.shape[1], dtype=np.bool)
         
         # xgboost - train model
         model_xgb = xgb.XGBRegressor(learning_rate=params_xgb['learning_rate'],
@@ -164,20 +180,19 @@ def train_models(X, Y, silence=False):
     
 
 if __name__ == '__main__':
+    # parser
+    FLAGS, unparsed = parser.parse_known_args()
     
     # print info
     print "\n========== Start training models ==========\n"
-    
-    # parser
-    FLAGS, unparsed = parser.parse_known_args()
     
     # load training data
     X, Y = load_data(FLAGS.data_dir)
     
     # train models
-    models = train_models(X, Y)
+    models = train_models(X, Y, FLAGS)
     
     # save models
-    save_models(models)
+    save_models(FLAGS.save_model_dir, models)
 
     print "\n========== End ==========\n"

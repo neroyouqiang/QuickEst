@@ -158,14 +158,14 @@ def split_train_test_data(df_features, df_targets,
     
 
 if __name__ == '__main__':
-    # fix the random seed
-    # np.random.seed(seed = 6)
+    # parser
+    FLAGS, unparsed = parser.parse_known_args()
     
     # print info
     print "\n========== Start preprocessing ==========\n"
     
-    # parser
-    FLAGS, unparsed = parser.parse_known_args()
+    # fix the random seed
+    np.random.seed(seed = 6)
     
     # file names
     if os.path.isdir(FLAGS.data_dir):
