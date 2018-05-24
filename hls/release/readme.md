@@ -8,7 +8,7 @@ optional arguments:
 ```
 
 ## Model training
-python train.py" [-h] [--data_dir DATA_DIR] [--save_model_dir SAVE_MODEL_DIR] [--feature_select]
+python train.py [-h] [--data_dir DATA_DIR] [--save_model_dir SAVE_MODEL_DIR] [--feature_select]
 
 ```
 optional arguments:
