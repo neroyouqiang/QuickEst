@@ -10,7 +10,7 @@ from sklearn import metrics
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', type = str, default = './data/data_test.pkl', 
-                    help = 'Directory to the input testing dataset. ')
+                    help = 'Directory to the testing dataset. ')
 parser.add_argument('--model_dir', type = str, default = './saves/train/models.pkl', 
                     help = 'Directory to the pre-trained models. ')
 parser.add_argument('--save_result_dir', type = str, default = './saves/test/results.csv', 

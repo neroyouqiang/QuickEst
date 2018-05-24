@@ -11,7 +11,7 @@ from sklearn.linear_model import Lasso
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', type = str, default = './data/data_train.pkl', 
-                    help = 'Directory to the input training dataset. ')
+                    help = 'Directory to the training dataset. ')
 parser.add_argument('--save_model_dir', type = str, default = './saves/train/models.pkl', 
                     help = 'Directory to save the trained model. Input folder or file name.')
 parser.add_argument('--feature_select', action = 'store_true',
