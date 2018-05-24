@@ -159,7 +159,7 @@ def split_train_test_data(df_features, df_targets,
 
 if __name__ == '__main__':
     # fix the random seed
-    np.random.seed(seed = 6)
+    # np.random.seed(seed = 6)
     
     # print info
     print "\n========== Start preprocessing ==========\n"
