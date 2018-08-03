@@ -4,27 +4,23 @@ import xgboost as xgb
 from sklearn.linear_model import Lasso
 from sklearn.neural_network import MLPRegressor
 
-from model.model_train import model_training
-
 from .technique import TrainTechniqueBase
 
 class FeatureSelectTech(TrainTechniqueBase):
     """
     """
     
-    def __init__(self, model_name, sel_method='lasso', sel_threshhold=0, lasso_alpha=1):
-        super(FeatureSelectTech, self).__init__(name=self.default_name() + ' - ' + model_name + ' feature selected by ' + sel_method)
+    def __init__(self, model_name, sel_method='lasso', sel_threshhold=0, lasso_alpha=1, silence=False):
+        super(FeatureSelectTech, self).__init__(silence=silence, name=self.default_name() + ' - ' + model_name + ' feature selected by ' + sel_method)
         self.model_name = model_name
         self.sel_method = sel_method
         self.sel_threshhold = sel_threshhold
         self.lasso_alpha = lasso_alpha
         
     
-    def train(self, X_train, Y_train, params={}, random_seed=None):
-        super(FeatureSelectTech, self).train(X_train, Y_train, params, random_seed=random_seed)
-        
+    def train(self, X_train, Y_train, params={}, random_seed=None, params_id=0):
         # default parameters
-        # if 'alpha' not in params: params['alpha'] = 0.1
+        if 'alpha' not in params: params['alpha'] = 0.1
         if 'learning_rate' not in params: params['learning_rate'] = 0.1
         if 'n_estimators' not in params: params['n_estimators'] = 600
         if 'max_depth' not in params: params['max_depth'] = 5
@@ -33,13 +29,17 @@ class FeatureSelectTech(TrainTechniqueBase):
         if 'colsample_bytree' not in params: params['colsample_bytree'] = 1
         if 'gamma' not in params: params['gamma'] = 0
         
+        # super func
+        super(FeatureSelectTech, self).train(X_train, Y_train, params, random_seed=random_seed)
+        
         # select feature
         if self.sel_method == 'lasso':
             # by lasso
             _model_lasso = Lasso(alpha=self.lasso_alpha)
             _model_lasso.fit(self.X_train, self.Y_train)
-            self.feature_select = np.abs(_model_lasso.coef_) > self.sel_threshhold
-        else:
+            self.feature_select = np.abs(_model_lasso.coef_) / np.abs(_model_lasso.coef_).sum() > self.sel_threshhold
+            
+        elif self.sel_method == 'xgb':
             # by xgboost
             _model_xgb = xgb.XGBRegressor(learning_rate=params['learning_rate'],
                                           n_estimators=params['n_estimators'],
@@ -54,9 +54,17 @@ class FeatureSelectTech(TrainTechniqueBase):
             feature_weights = [b.get_score(importance_type='weight').get(f, 0.) for f in b.feature_names]
             feature_weights = np.array(feature_weights, dtype=np.float32)
             self.feature_select  = (feature_weights / feature_weights.sum()) > self.sel_threshhold
+          
+        # print self.feature_select
             
         # train model
-        if self.model_name == 'xgb':
+        if self.model_name == 'lasso':
+            # by lasso
+            self.model = Lasso(alpha=params['alpha'])
+            self.model.fit(self.X_train[:, self.feature_select], self.Y_train)
+            # print self.model.coef_
+            
+        elif self.model_name == 'xgb':
             # by xgboost
             self.model = xgb.XGBRegressor(learning_rate=params['learning_rate'],
                                           n_estimators=params['n_estimators'],
@@ -66,6 +74,8 @@ class FeatureSelectTech(TrainTechniqueBase):
                                           colsample_bytree=params['colsample_bytree'],
                                           gamma=params['gamma'])
             self.model.fit(self.X_train[:, self.feature_select], self.Y_train)
+            
+        # print self.model.coef_
         
     
     def test(self, X_test, Y_test):

@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 import xgboost as xgb
 from sklearn import metrics
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 
-from model.model_test2 import score_REA, score_MSE
+from model.model_test2 import score_REA, score_MSE, score_norm
 from model.model_train import model_training
 
 class TrainTechniqueBase(object):
@@ -50,7 +51,7 @@ class TrainTechniqueBase(object):
     def score(self, Y, Y_pre, is_plot_errors=False):
         # get score
         _RAE, errors = score_REA(Y, Y_pre)
-        _MSE, errors = score_MSE(Y, Y_pre)
+        _norm2, errors = score_norm(Y, Y_pre, norm_ord=2)
         _R2 = metrics.r2_score(Y, Y_pre)
         
         if is_plot_errors:
@@ -58,11 +59,16 @@ class TrainTechniqueBase(object):
             plt.plot(errors)
             plt.show()
         
-        return _RAE, _MSE, _R2
+        return _RAE, _norm2, _R2
     
     
     def predict(self, X_test):
         return
+    
+    
+    def save_model(self, save_path):
+        with open(save_path, 'w') as f:
+            pickle.dump(self.model, f)
         
 
 class TrainTech(TrainTechniqueBase):
@@ -70,16 +76,18 @@ class TrainTech(TrainTechniqueBase):
     Train one basic model.
     """
     
-    def __init__(self, model_name):
-        super(TrainTech, self).__init__(name=self.default_name() + ' - ' + model_name)
+    def __init__(self, model_name, silence=False):
+        super(TrainTech, self).__init__(silence=silence, name=self.default_name() + ' - ' + model_name)
         
         self.model_name = model_name
         
     
-    def train(self, X_train, Y_train, params={}, random_seed=None):
+    def train(self, X_train, Y_train, params={}, random_seed=None, params_id=0):
         super(TrainTech, self).train(X_train, Y_train, params, random_seed=random_seed)
             
         # train model
+        # self.X_train = self.X_train ** 0.1
+        # self.Y_train = self.Y_train ** 1
         self.model = model_training(self.X_train, self.Y_train, self.model_name, 
                                     hyperparams=params, silence=True)
         
@@ -89,6 +97,7 @@ class TrainTech(TrainTechniqueBase):
         
         # test model
         _Y_test_pre = self.predict(self.X_test)
+        # _Y_test_pre = _Y_test_pre ** 1
         
         # return score
         return self.score(self.Y_test, _Y_test_pre, is_plot_errors=False)

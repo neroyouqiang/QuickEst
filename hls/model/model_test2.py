@@ -56,7 +56,6 @@ def model_testing_timing(model, X, Y):
     return error, results
 
 
-
 def score_REA(Y, Y_pre):
     """
     Score by the true and predicted Y
@@ -66,9 +65,10 @@ def score_REA(Y, Y_pre):
     
     Y_mean = np.mean(Y)
     error = Y_pre - Y
-    REA = np.mean(np.abs(error)) / (np.mean(np.abs(Y - Y_mean)) + np.finfo(float).eps)
+    RAE = np.mean(np.abs(error)) / (np.mean(np.abs(Y - Y_mean)) + np.finfo(float).eps)
     
-    return REA, error
+    # return np.mean(Y), error
+    return RAE, error
 
 
 def score_RRSE(Y, Y_pre):
@@ -96,6 +96,8 @@ def score_MSE(Y, Y_pre):
     MSE = np.square(error).mean()
     MSE = np.sqrt(MSE)
     
+    # Y_mean = np.mean(Y)
+    # return np.std(Y), error
     return MSE, error
 
 
@@ -110,6 +112,22 @@ def score_Accuracy(Y, Y_pre):
     error = 1 - float(results.sum()) / float(results.size)
     
     return error, results
+
+
+def score_norm(Y, Y_pre, norm_ord=2):
+    """
+    Score by the true and predicted Y
+    """
+    Y_pre = np.array(Y_pre)
+    Y = np.array(Y)
+    
+    Y_mean = np.mean(Y)
+    error = Y_pre - Y
+    
+    RAE = LA.norm(error, ord=norm_ord) / (LA.norm(Y - Y_mean, ord=norm_ord) + np.finfo(float).eps)
+    
+    # return np.mean(Y), error
+    return RAE, error
 
 # -*- coding: utf-8 -*-
 

@@ -4,7 +4,7 @@ import pickle
 import xgboost as xgb
 import catboost as cb
 import lightgbm as lgb
-import LinXGBoost.linxgb as linxgb
+import linxgboost.linxgb as linxgb
 
 from sklearn.linear_model import LinearRegression, Lasso, Ridge, ARDRegression
 from sklearn.neural_network import MLPRegressor
