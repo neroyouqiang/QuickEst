@@ -1,4 +1,4 @@
-This released project is used to predict the resources after the implementation. The predicted resource including DSP, FF, LUT and BRAM.   
+### This released project is used to predict the resources after the implementation. The predicted resource including DSP, FF, LUT and BRAM.   
 
 ## Data preprocessing
 python preprocess.py  [-h] [--data_dir DATA_DIR]
