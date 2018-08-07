@@ -1,4 +1,4 @@
-This released project is used to predict the resources after the implementation. The predicted resource including DSP, FF, LUT and BRAM.   
+This released project is used to distinguish whecher the a design is an "outlier" design.
 
 ## Data preprocessing
 python preprocess.py  [-h] [--data_dir DATA_DIR]
@@ -6,7 +6,8 @@ python preprocess.py  [-h] [--data_dir DATA_DIR]
 ```
 optional arguments:
   -h, --help           show this help message and exit
-  --data_dir DATA_DIR  Directory to the input dataset.
+  --data_dir DATA_DIR  Directory to the input normal dataset.
+  --data_outlier_dir DATA_DIR  Directory to the input outlier dataset.
 ```
 
 ## Model training
