@@ -100,7 +100,7 @@ def params_lasso(targetid=None):
     param_defaults = []
     
     # for Target 0
-    param_defaults.append({'alpha': 1.0}) # 20.0
+    param_defaults.append({'alpha': 20.0}) # 20.0
     
     # for Target 1
     param_defaults.append({'alpha': 180.0}) # 180.0
@@ -125,16 +125,16 @@ def params_ann(targetid=None):
     param_defaults = []
     
     # for Target 0
-    param_defaults.append({'hidden_layer_sizes': (30, 30)})
+    param_defaults.append({'hidden_layer_sizes': (1, 11), 'alpha':20})
     
     # for Target 1
-    param_defaults.append({'hidden_layer_sizes': (30, 30)})
+    param_defaults.append({'hidden_layer_sizes': (1, 41), 'alpha':95})
     
     # for Target 2
-    param_defaults.append({'hidden_layer_sizes': (30, 30)})
+    param_defaults.append({'hidden_layer_sizes': (30, 30), 'alpha':0})
     
     # for Target 3
-    param_defaults.append({'hidden_layer_sizes': (30, 30)})
+    param_defaults.append({'hidden_layer_sizes': (30, 30), 'alpha':0})
     
     # return
     if targetid is not None:

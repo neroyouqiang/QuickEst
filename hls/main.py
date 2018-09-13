@@ -94,11 +94,11 @@ def show_save_result(result, val_list=None):
     print result['RRSE_whole'] * 100
     # print (result['MSEs'][:, 2] * result['Test number'][:, 2]).sum() / result['Test number'][:, 2].sum() * 100
                 
-    print "\nTesting R2 results: "
-    print result['R2s']
+    print "\nTesting 1 - R2 results: "
+    print 1 - result['R2s']
     print "Average: "
-    print result['R2s'].mean(axis=0)
-    print result['R2_whole']
+    print 1 - result['R2s'].mean(axis=0)
+    print 1 - result['R2_whole']
     
     # save file
     if not os.path.exists("./saves/results/"):
@@ -296,24 +296,24 @@ if __name__ == '__main__':
 #        val_list = [[x] for x in xrange(56 + 1)]
         
         # by dynamic programming - FF
-#        val_list = [[2, 3, 4, 5, 6, 7, 9, 10, 12, 13, 15, 16, 18, 19],
-#                    [0, 1, 14, 17, 20, 21, 22, 23, 24, 25, 26, 27, 29, 33],
-#                    [8, 28, 30, 31, 32, 34, 36, 37, 38, 39, 41, 43, 44, 45],
-#                    [11, 35, 40, 42, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56]]
+        val_list = [[2, 3, 4, 5, 6, 7, 9, 10, 12, 13, 15, 16, 18, 19],
+                    [0, 1, 14, 17, 20, 21, 22, 23, 24, 25, 26, 27, 29, 33],
+                    [8, 28, 30, 31, 32, 34, 36, 37, 38, 39, 41, 43, 44, 45],
+                    [11, 35, 40, 42, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56]]
         
         # by dynamic programming - LUT
-#        val_list = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 17, 18, 19],
-#                    [9, 10, 14, 15, 20, 21, 23, 24, 25, 26, 27, 28, 29, 33],
-#                    [16, 22, 30, 31, 32, 34, 35, 37, 38, 40, 41, 42, 43, 46],
-#                    [13, 36, 39, 44, 45, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56]]
+        val_list = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 17, 18, 19],
+                    [9, 10, 14, 15, 20, 21, 23, 24, 25, 26, 27, 28, 29, 33],
+                    [16, 22, 30, 31, 32, 34, 35, 37, 38, 40, 41, 42, 43, 46],
+                    [13, 36, 39, 44, 45, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56]]
         
-        # by sorting and selecting - FF
+#        # by sorting and selecting - FF
 #        val_list = [[3, 5, 7, 19, 22, 23, 29, 31, 35, 37, 38, 39, 42, 53, 54],
 #                    [0, 4, 11, 16, 18, 33, 34, 36, 44, 45, 46, 49, 52, 56],
 #                    [1, 8, 10, 14, 17, 20, 26, 28, 41, 43, 48, 50, 51, 55],
 #                    [2, 6, 9, 12, 13, 15, 21, 24, 25, 27, 30, 32, 40, 47]]
-        
-        # by sorting and selecting - LUT
+#        
+#        # by sorting and selecting - LUT
 #        val_list = [[7, 11, 16, 26, 27, 30, 33, 35, 36, 37, 41, 48, 52, 53, 54], 
 #                    [0, 1, 8, 9, 13, 18, 19, 22, 29, 38, 40, 45, 47, 55],
 #                    [2, 14, 20, 23, 25, 28, 39, 42, 43, 44, 46, 49, 50, 56],
@@ -323,37 +323,86 @@ if __name__ == '__main__':
 #        np.random.seed(seed = 101)
 #        _tmp = np.random.choice(56, 56, replace=False)
 #        val_list = [_tmp[0: 14].tolist(), _tmp[14: 28].tolist(), _tmp[28: 42].tolist(), _tmp[42: 56].tolist()]
-        
     
-    # val_list = [x for x in xrange(0, 200, 2)]
     target_ids = [0, 1]
+        
+#    # training model
+#    if FLAGS.train or True:
+#        print "\n========== Start training ==========\n"
+#        
+#        # init models
+#        techniques = init_models(val_list, target_ids)
+#    
+#        # train models
+#        techniques = train_models(techniques, val_list, target_ids) # , set_params=param
+#    
+#        # save models
+#        # save_models(techniques, FLAGS)
+#        
+#    # testing model
+#    if FLAGS.test or True:
+#        print "\n========== Start testing ==========\n"
+#        
+#        # load models
+#        # techniques = load_models(FLAGS)
+#        
+#        # test models
+#        result = test_models(techniques, val_list, target_ids)
+#        
+#        # show and save result
+#        show_save_result(result, val_list)
+#            
+#            
+#    print "\n========== End ==========\n"
+    
+    params = []
+    results = []
+    
+#    # tune parameters for ANN
+#    for ii in xrange(1, 100, 10):
+#        for jj in xrange(1, 101, 10):
+#            for tt in xrange(0, 100, 5):
+#                params.append({'hidden_layer_sizes': (ii, jj), 'alpha':tt})
+#                
+#    for ii in xrange(1, 100, 10):
+#        for tt in xrange(0, 100, 5):
+#            params.append({'hidden_layer_sizes': (ii), 'alpha':tt})
 
-    # training model
-    if FLAGS.train or True:
-        print "\n========== Start training ==========\n"
+    # tune parameters for ridge
+    for ii in xrange(1, 500, 5):
+        params.append({'alpha': ii})
+
+    for param in params:
+        # training model
+        if FLAGS.train or True:
+            print "\n========== Start training ==========\n"
+            
+            # init models
+            techniques = init_models(val_list, target_ids)
         
-        # init models
-        techniques = init_models(val_list, target_ids)
-    
-        # train models
-        techniques = train_models(techniques, val_list, target_ids)
+            # train models
+            techniques = train_models(techniques, val_list, target_ids , set_params=param)
         
-        # save models
-        # save_models(techniques, FLAGS)
-    
-    # testing model
-    if FLAGS.test or True:
-        print "\n========== Start testing ==========\n"
+            # save models
+            # save_models(techniques, FLAGS)
+            
+        # testing model
+        if FLAGS.test or True:
+            print "\n========== Start testing ==========\n"
+            
+            # load models
+            # techniques = load_models(FLAGS)
+            
+            # test models
+            result = test_models(techniques, val_list, target_ids)
+            
+            # show and save result
+            show_save_result(result, val_list)
+                
+                
+        print "\n========== End ==========\n"
         
-        # load models
-        # techniques = load_models(FLAGS)
+        results.append(result['RRSE_whole'])
         
-        # test models
-        result = test_models(techniques, val_list, target_ids)
-        
-        # show and save result
-        show_save_result(result, val_list)
-        
-        
-    print "\n========== End ==========\n"
+    np.savetxt('./saves/results_results.csv', results, delimiter=',')
     

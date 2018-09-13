@@ -25,13 +25,17 @@ def model_training(X, Y, model_name, hyperparams={}, silence=False):
         model = Lasso(alpha=hyperparams['alpha'])
         
     if model_name == 'ridge' or model_name == 'ridgelin':
-        model = Ridge(alpha=10.0)
+        model = Ridge(alpha=hyperparams['alpha'])
         
     if model_name == 'ard' or model_name == 'ardlin':
         model = ARDRegression()
     
     if model_name == 'ann' or model_name == 'artificialneuralnetwork': 
-        model = MLPRegressor(solver='lbfgs', hidden_layer_sizes=hyperparams['hidden_layer_sizes'], random_state=0)
+        model = MLPRegressor(solver='lbfgs', 
+                             hidden_layer_sizes=hyperparams['hidden_layer_sizes'], 
+                             alpha=hyperparams['alpha'], 
+                             activation='identity',
+                             random_state=0)
         
     elif model_name == 'xgb' or model_name == 'xgboost':
         model = xgb.XGBRegressor(learning_rate=hyperparams['learning_rate'],
